@@ -8,6 +8,11 @@ import { TalkingPhoto } from '@/types/heygen';
 export default function Home() {
     const [selectedPhoto, setSelectedPhoto] = useState<TalkingPhoto | null>(null);
 
+    const handleSelectPhoto = (photo: TalkingPhoto) => {
+        console.log('Home: handleSelectPhoto called with:', photo);
+        setSelectedPhoto(photo);
+    };
+
     return (
         <main className="min-h-screen bg-gray-50 p-8">
             <div className="max-w-6xl mx-auto space-y-8">
@@ -17,15 +22,15 @@ export default function Home() {
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    <div className="lg:col-span-7 space-y-4">
+                    <div className="lg:col-span-4 space-y-4">
                         <div className="flex items-center justify-between">
                             <h2 className="text-xl font-semibold text-gray-800">Select an Avatar</h2>
                             <span className="text-sm text-gray-500">Click to select</span>
                         </div>
-                        <AvatarList onSelect={setSelectedPhoto} selectedAvatarId={selectedPhoto?.talking_photo_id} />
+                        <AvatarList onSelect={handleSelectPhoto} selectedAvatarId={selectedPhoto?.talking_photo_id} />
                     </div>
 
-                    <div className="lg:col-span-5">
+                    <div className="lg:col-span-8">
                         <div className="sticky top-8 h-[calc(100vh-100px)]">
                             <h2 className="text-xl font-semibold text-gray-800 mb-4">Create Video</h2>
                             <VideoCreator selectedPhoto={selectedPhoto} />

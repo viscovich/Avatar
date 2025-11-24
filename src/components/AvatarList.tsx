@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { TalkingPhoto } from '@/types/heygen';
-import { Loader2, Image as ImageIcon, Filter } from 'lucide-react';
+import { Loader2, Image as ImageIcon, Filter, MonitorPlay } from 'lucide-react';
 
 interface AvatarListProps {
     onSelect: (photo: any) => void;
@@ -16,6 +16,18 @@ export default function AvatarList({ onSelect, selectedAvatarId }: AvatarListPro
     const [error, setError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [showCustomOnly, setShowCustomOnly] = useState(true);
+    const [showAnimatedOnly, setShowAnimatedOnly] = useState(true);
+
+    // List of IDs known to be animated (since API doesn't provide this info)
+    const ANIMATED_AVATAR_IDS = [
+        '57dfb92d5e1d45b389ab34b1fca3ff99',
+        '3162913d3aa2457583ebb7886dc055ee',
+        '92c994c404894e25bee628bea0e63a61',
+        'a2461c077407432f8273d2b104b69199',
+        '1c59224bb8fa4fd9a57274b6f3d189ea',
+        'c681e2ec9d9a493790d344ad53c6bc77',
+        '13ef3ddd65384f50b10945930ff962fa',
+    ];
 
     useEffect(() => {
         const fetchTalkingPhotos = async () => {
@@ -46,6 +58,7 @@ export default function AvatarList({ onSelect, selectedAvatarId }: AvatarListPro
     }, []);
 
     const isCustomPhoto = (photo: TalkingPhoto): boolean => {
+        if (ANIMATED_AVATAR_IDS.includes(photo.talking_photo_id)) return true;
         const name = photo.talking_photo_name.toLowerCase();
         const customKeywords = [
             'daniele', 'visionario', 'trader', 'stratega', 'ufficio',
@@ -58,6 +71,11 @@ export default function AvatarList({ onSelect, selectedAvatarId }: AvatarListPro
     const filteredPhotos = talkingPhotos.filter(photo => {
         if (showCustomOnly && !isCustomPhoto(photo)) {
             return false;
+        }
+        if (showAnimatedOnly) {
+            if (!ANIMATED_AVATAR_IDS.includes(photo.talking_photo_id)) {
+                return false;
+            }
         }
         return photo.talking_photo_name.toLowerCase().includes(searchTerm.toLowerCase());
     });
@@ -95,6 +113,16 @@ export default function AvatarList({ onSelect, selectedAvatarId }: AvatarListPro
                         <Filter className="w-4 h-4 text-gray-600" />
                         <span className="text-sm text-gray-700 font-medium">Show only my custom photos</span>
                     </label>
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={showAnimatedOnly}
+                            onChange={(e) => setShowAnimatedOnly(e.target.checked)}
+                            className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                        />
+                        <MonitorPlay className="w-4 h-4 text-gray-600" />
+                        <span className="text-sm text-gray-700 font-medium">Show only animated</span>
+                    </label>
                 </div>
 
                 <input
@@ -126,15 +154,26 @@ export default function AvatarList({ onSelect, selectedAvatarId }: AvatarListPro
                         )}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-2 gap-3">
                         {filteredPhotos.map((photo) => (
                             <div
                                 key={photo.talking_photo_id}
-                                className={`cursor-pointer border-2 rounded-lg overflow-hidden hover:shadow-lg transition-all transform hover:scale-105 ${selectedAvatarId === photo.talking_photo_id
-                                        ? 'ring-2 ring-blue-500 border-blue-500 shadow-lg'
-                                        : 'border-gray-200 hover:border-blue-300'
+                                role="button"
+                                tabIndex={0}
+                                className={`cursor-pointer border-2 rounded-lg overflow-hidden ${selectedAvatarId === photo.talking_photo_id
+                                    ? 'ring-2 ring-blue-500 border-blue-500 shadow-lg'
+                                    : 'border-gray-200 hover:border-blue-300'
                                     }`}
-                                onClick={() => onSelect(photo)}
+                                onClick={() => {
+                                    console.log('Avatar selected (onClick):', photo.talking_photo_id);
+                                    onSelect(photo);
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        console.log('Avatar selected (onKeyDown):', photo.talking_photo_id);
+                                        onSelect(photo);
+                                    }
+                                }}
                             >
                                 <div className="relative">
                                     <img

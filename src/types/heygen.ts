@@ -10,6 +10,7 @@ export interface TalkingPhoto {
     talking_photo_id: string;
     talking_photo_name: string;
     preview_image_url: string;
+    preview_video_url?: string;
 }
 
 export interface Voice {
